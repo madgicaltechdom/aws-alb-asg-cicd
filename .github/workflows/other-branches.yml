@@ -1,0 +1,36 @@
+name: CICD for staging server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-and-restart:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Get Branch Name
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: SSH into Instance and Pull Code
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.INSTANCE_IP }}
+          username: ${{ secrets.INSTANCE_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Change directory to where the code is stored
+
+            # Fetch the latest changes from the repository
+            git fetch
+
+            # Checkout the desired branch
+            git checkout ${{ env.BRANCH_NAME }}
+
+            # Pull the latest code from the repository
+            git pull origin ${{ env.BRANCH_NAME }}
+
+            # Restart the server with command
+            
